@@ -1,5 +1,3 @@
 Significance: patch
 Type: dev
 Comment: Switch woo admin lint command from wp-script to eslint
-
-
