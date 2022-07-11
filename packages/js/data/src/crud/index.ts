@@ -18,6 +18,7 @@ type CrudDataStore = {
 	resourceName: string;
 	pluralResourceName: string;
 	namespace: string;
+	isNested: boolean;
 };
 
 export const createCrudDataStore = ( {
@@ -25,16 +26,19 @@ export const createCrudDataStore = ( {
 	resourceName,
 	namespace,
 	pluralResourceName,
+	isNested = false,
 }: CrudDataStore ) => {
 	const reducer = createReducer();
 	const actions = createDispatchActions( {
 		resourceName,
 		namespace,
+		isNested,
 	} );
 	const resolvers = createResolvers( {
 		resourceName,
 		pluralResourceName,
 		namespace,
+		isNested,
 	} );
 	const selectors = createSelectors( { resourceName, pluralResourceName } );
 

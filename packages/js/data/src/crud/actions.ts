@@ -6,14 +6,15 @@ import { apiFetch } from '@wordpress/data-controls';
 /**
  * Internal dependencies
  */
-import CRUD_ACTIONS from './crud-actions';
 import { getRestPath } from './utils';
+import CRUD_ACTIONS from './crud-actions';
 import TYPES from './action-types';
 import { IdType, Item, ItemQuery } from './types';
 
 type ResolverOptions = {
 	resourceName: string;
 	namespace: string;
+	isNested: boolean;
 };
 
 export function createItemError( query: Partial< ItemQuery >, error: unknown ) {
@@ -105,10 +106,11 @@ export function updateItemSuccess( id: IdType, item: Item ) {
 export const createDispatchActions = ( {
 	namespace,
 	resourceName,
+	isNested,
 }: ResolverOptions ) => {
 	const createItem = function* (
 		query: Partial< ItemQuery >,
-		...urlParameters: string[]
+		...urlParameters: IdType[]
 	) {
 		try {
 			const item: Item = yield apiFetch( {
@@ -127,7 +129,7 @@ export const createDispatchActions = ( {
 	const deleteItem = function* (
 		id: IdType,
 		force = true,
-		...urlParameters: string[]
+		...urlParameters: IdType[]
 	) {
 		try {
 			const item: Item = yield apiFetch( {
@@ -150,7 +152,7 @@ export const createDispatchActions = ( {
 	const updateItem = function* (
 		id: IdType,
 		query: Partial< ItemQuery >,
-		...urlParameters: string[]
+		...urlParameters: IdType[]
 	) {
 		try {
 			const item: Item = yield apiFetch( {
@@ -162,18 +164,18 @@ export const createDispatchActions = ( {
 				method: 'PUT',
 			} );
 
-			yield updateItemSuccess( item.id, item );
+			yield updateItemSuccess( item.id, item, urlParameters );
 			return item;
 		} catch ( error ) {
-			yield updateItemError( query, error );
+			yield updateItemError( query, error, urlParameters );
 			throw error;
 		}
 	};
 
 	return {
-		[ `create${ resourceName }` ]: createItem,
-		[ `delete${ resourceName }` ]: deleteItem,
-		[ `update${ resourceName }` ]: updateItem,
+		[ `create${ resourceName }` ]: possiblyNest( createItem, isNested ),
+		[ `delete${ resourceName }` ]: possiblyNest( deleteItem, isNested ),
+		[ `update${ resourceName }` ]: possiblyNest( updateItem, isNested ),
 	};
 };
 

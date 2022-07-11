@@ -6,13 +6,13 @@ import { apiFetch } from '@wordpress/data-controls';
 /**
  * Internal dependencies
  */
+import { getRestPath, possiblyNest } from './utils';
 import {
 	getItemError,
 	getItemSuccess,
 	getItemsError,
 	getItemsSuccess,
 } from './actions';
-import { getRestPath } from './utils';
 import { request } from '../utils';
 import { Item, ItemQuery } from './types';
 
@@ -20,12 +20,14 @@ type ResolverOptions = {
 	resourceName: string;
 	pluralResourceName: string;
 	namespace: string;
+	isNested: boolean;
 };
 
 export const createResolvers = ( {
 	resourceName,
 	pluralResourceName,
 	namespace,
+	isNested,
 }: ResolverOptions ) => {
 	const getItem = function* ( id: number, ...urlParameters: string[] ) {
 		try {
@@ -77,7 +79,7 @@ export const createResolvers = ( {
 	};
 
 	return {
-		[ `get${ resourceName }` ]: getItem,
-		[ `get${ pluralResourceName }` ]: getItems,
+		[ `get${ resourceName }` ]: possiblyNest( getItem, isNested ),
+		[ `get${ pluralResourceName }` ]: possiblyNest( getItems, isNested ),
 	};
 };
